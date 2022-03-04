@@ -26,6 +26,12 @@ void Player::Update(float deltaTime)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
 		movement.x += speed * deltaTime;
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+		movement.y -= speed * deltaTime;
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+		movement.y += speed * deltaTime;
+
 	if (movement.x == 0.0f)
 	{
 		row = 0;
@@ -38,12 +44,6 @@ void Player::Update(float deltaTime)
 		else
 			faceRight = false;
 	}
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-		movement.y -= speed * deltaTime;
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-		movement.y += speed * deltaTime;
 
 	animation.Update(row, deltaTime, faceRight);
 	body.setTextureRect(animation.uvRect);
