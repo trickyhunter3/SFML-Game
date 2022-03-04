@@ -1,8 +1,11 @@
 #include "Player.h"
 
-Player::Player(sf::Texture * texture, sf::Vector2u imageCount, float switchTime, float speed, sf::Vector2u textureOffset) : animation(texture, imageCount, switchTime, textureOffset)
+const float GRAVITY = 981.0f;
+
+Player::Player(sf::Texture * texture, sf::Vector2u imageCount, float switchTime, float speed, sf::Vector2u textureOffset, float jumpHeight) : animation(texture, imageCount, switchTime, textureOffset)
 {
 	this->speed = speed;
+	this->jumpHeight = jumpHeight;
 	row = 0;
 	faceRight = true;
 
@@ -18,28 +21,32 @@ Player::~Player()
 
 void Player::Update(float deltaTime)
 {
-	sf::Vector2f movement(0.0f, 0.0f);
+	velocity.x = 0.1f;//how fast to stop *
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-		movement.x -= speed * deltaTime;
+		velocity.x -= speed;
 	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-		movement.x += speed * deltaTime;
+		velocity.x += speed;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-		movement.y -= speed * deltaTime;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space) && canJump)
+	{
+		canJump = false;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-		movement.y += speed * deltaTime;
+		//squre root (2.0f * gravity * jumpheight)
+		velocity.y = -sqrtf(2.0f * GRAVITY * jumpHeight);
+	}
 
-	if (movement.x == 0.0f)
+	velocity.y += GRAVITY * deltaTime;
+
+	if (velocity.x == 0.0f)
 	{
 		row = 0;
 	}
 	else
 	{
 		row = 1;
-		if (movement.x > 0.0f)
+		if (velocity.x > 0.0f)
 			faceRight = true;
 		else
 			faceRight = false;
@@ -47,10 +54,35 @@ void Player::Update(float deltaTime)
 
 	animation.Update(row, deltaTime, faceRight);
 	body.setTextureRect(animation.uvRect);
-	body.move(movement);
+	body.move(velocity * deltaTime);
 }
 
 void Player::Draw(sf::RenderWindow& window)
 {
 	window.draw(body);
+}
+
+void Player::OnCollision(sf::Vector2f direction)
+{
+	if (direction.x < 0.0f)
+	{
+		//collision of the left.
+		velocity.x = 0.0f;
+	}
+	else if (direction.x > 0.0f)
+	{
+		//collision of the right.
+		velocity.x = 0.0f;
+	}
+	if (direction.y < 0.0f)
+	{
+		//collision of the bottom.
+		velocity.y = 0.0f;
+		canJump = true;
+	}
+	else if (direction.y > 0.0f)
+	{
+		//collision of the top.
+		velocity.y = 0.0f;
+	}
 }
