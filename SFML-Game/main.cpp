@@ -1,17 +1,24 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include "Animation.h"
+#include "Player.h"
+
+static const float VIEW_HEIGHT = 512.0f;
+
+void ResizeView(sf::RenderWindow& window, sf::View& view)
+{
+	float aspectRatio = float(window.getSize().x) / float(window.getSize().y);
+
+	view.setSize(VIEW_HEIGHT * aspectRatio, VIEW_HEIGHT);
+}
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(512, 512), "Game", sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
-	sf::RectangleShape player(sf::Vector2f(100.0f, 150.0f));
-	//player.setFillColor(sf::Color::Blue);
+	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(VIEW_HEIGHT, VIEW_HEIGHT));
 	sf::Texture playerTexture;
-	playerTexture.loadFromFile("textu.png");
-	player.setTexture(&playerTexture);
-
-	Animation animation(&playerTexture, sf::Vector2u(4, 2), 0.3f);
+	playerTexture.loadFromFile("tux.png");
+	sf::Vector2u offset(0, 4);
+	Player player(&playerTexture, sf::Vector2u(3, 9), 0.3f, 100.0f, offset);
 	float deltaTime = 0.0f;
     sf::Clock clock;
 
@@ -27,50 +34,23 @@ int main()
 			{
 			case sf::Event::Closed:
 				window.close();
+				break;
 
-			//case sf::Event::Resized:
-			//	std::cout << "New Window width: " << evnt.size.width << " New Window Height: " << evnt.size.height << std::endl;
-			//	break;
-
-			case sf::Event::TextEntered:
-				if(evnt.text.unicode < 128)
-					printf("%c", evnt.text.unicode);
+			case sf::Event::Resized:
+				ResizeView(window, view);
 				break;
 
 			default:
 				break;
 			}
 		}
-		//check for input
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
-		{
-			player.move(-0.1f, 0.0f);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
-		{
-			player.move(0.1f, 0.0f);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-		{
-			player.move(0.0f, -0.1f);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-		{
-			player.move(0.0f, 0.1f);
-		}
 
-		//mouse input 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		{
-			sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-			player.setPosition((float)mousePos.x, (float)mousePos.y);
-		}
+		player.Update(deltaTime);
+		view.setCenter(player.GetPosition());
 
-		animation.Update(1, deltaTime);
-		player.setTextureRect(animation.uvRect);
-
-		window.clear(sf::Color::White);
-		window.draw(player);
+		window.clear(sf::Color(150, 150, 150));
+		window.setView(view);
+		player.Draw(window);
 		window.display();
 	}
 

@@ -3,10 +3,10 @@
 class Animation
 {
 public:
-	Animation(sf::Texture* texture, sf::Vector2u imageCount, float switchTime);
+	Animation(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, sf::Vector2u textureOffset);
 	~Animation();
 
-	void Update(int row, float deltaTime);
+	void Update(int row, float deltaTime, bool faceRight);
 
 public:
 	sf::IntRect uvRect;
